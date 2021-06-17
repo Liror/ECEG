@@ -37,17 +37,19 @@ module ModMul(
 
 	// Temporary variables for cascade
 	wire [`DATAWIDTH - 1 : 0] tmp [0:`DATAWIDTH];
-	wire [`DATAWIDTH - 1 : 0] tmp1 [0:`DATAWIDTH];
+	wire [`DATAWIDTH : 0] tmp1 [0:`DATAWIDTH];
 	wire [`DATAWIDTH - 1 : 0] tmp2 [0:`DATAWIDTH];
+	wire [`DATAWIDTH - 1 : 0] tmp3 [0:`DATAWIDTH];
 	genvar i;
 		
 	// Using Double-and-Add cascade for scalar multiplication
 	assign tmp[`DATAWIDTH] = `DATAWIDTH'b0;
 	generate
 		for(i=`DATAWIDTH; i>0; i=i-1) begin : ModMul_loop
-			ModAdd adder_mulA( .a(tmp[i]), .b(tmp[i]), .r(tmp1[i]) );
-			ModAdd adder_mulB( .a(tmp1[i]), .b(b), .r(tmp2[i]) );
-			assign tmp[i-1] = a[i-1] ? tmp2[i] : tmp1[i];
+			assign tmp1[i] = {tmp[i], 1'b0} - `p;
+			assign tmp2[i] = tmp1[i][`DATAWIDTH] ? (tmp1[i][`DATAWIDTH-1:0] + `p) : tmp1[i][`DATAWIDTH-1:0];
+			ModAdd adder_mulB( .a(tmp2[i]), .b(b), .r(tmp3[i]) );
+			assign tmp[i-1] = a[i-1] ? tmp3[i] : tmp2[i];
 		end
 	endgenerate
 	assign r = tmp[0];
