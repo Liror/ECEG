@@ -24,9 +24,9 @@ module Encrypt(
 	wire [`DATAWIDTH - 1 : 0] Dy;
 	
 	// Encryption operations on elliptic curve
-	PointMultiplier mulmoduleA( .n(k), .Qx(Px), .Qy(Py), .Rx_out(Cx), .Ry_out(Cy) );
-	PointMultiplier mulmoduleB( .n(k), .Qx(Yx), .Qy(Yy), .Rx_out(Cpx), .Ry_out(Cpy) );
-	PointAdder addmodule( .Px(Cpx), .Py(Cpy), .Qx(Mx_in), .Qy(My_in), .Rx_out(Dx), .Ry_out(Dy) );
+	PointMultiplier mulmodule_encA( .n(k), .Qx(Px), .Qy(Py), .Rx_out(Cx), .Ry_out(Cy) );
+	PointMultiplier mulmodule_encB( .n(k), .Qx(Yx), .Qy(Yy), .Rx_out(Cpx), .Ry_out(Cpy) );
+	PointAdder addmodule_enc( .Px(Cpx), .Py(Cpy), .Qx(Mx_in), .Qy(My_in), .Rx_out(Dx), .Ry_out(Dy) );
 	
 	// Final point assignment
 	assign C1x_out = Cx;

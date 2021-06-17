@@ -24,9 +24,9 @@ module PointMultiplier(
 	
 	// Unrolled Double-and-Add cascade
 	generate
-		for(i=`DATAWIDTH; i>0; i=i-1) begin : gen_loop
-			PointAdder addmoduleA( .Px(Qx_arr[i]), .Py(Qy_arr[i]), .Qx(Qx_arr[i]), .Qy(Qy_arr[i]), .Rx_out(tmp1X_arr[i]), .Ry_out(tmp1Y_arr[i]) );
-			PointAdder addmoduleB( .Px(tmp1X_arr[i]), .Py(tmp1Y_arr[i]), .Qx(Qx), .Qy(Qy), .Rx_out(tmp2X_arr[i]), .Ry_out(tmp2Y_arr[i]) );
+		for(i=`DATAWIDTH; i>0; i=i-1) begin : pmul_loop
+			PointAdder addmodule_pmulA( .Px(Qx_arr[i]), .Py(Qy_arr[i]), .Qx(Qx_arr[i]), .Qy(Qy_arr[i]), .Rx_out(tmp1X_arr[i]), .Ry_out(tmp1Y_arr[i]) );
+			PointAdder addmodule_pmulB( .Px(tmp1X_arr[i]), .Py(tmp1Y_arr[i]), .Qx(Qx), .Qy(Qy), .Rx_out(tmp2X_arr[i]), .Ry_out(tmp2Y_arr[i]) );
 			assign Qx_arr[i-1] = n[i-1] ? tmp2X_arr[i] : tmp1X_arr[i];
 			assign Qy_arr[i-1] = n[i-1] ? tmp2Y_arr[i] : tmp1Y_arr[i];
 		end

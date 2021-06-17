@@ -16,7 +16,7 @@ module PointAdder(
 	wire [`DATAWIDTH - 1 : 0] lambda;
 	
 	// Inversion to check for mirrored points
-	PointInversion invmodule( .Qx(Qx), .Qy(Qy), .Rx_out(invQx), .Ry_out(invQy) );
+	PointInversion invmodule_padd( .Qx(Qx), .Qy(Qy), .Rx_out(invQx), .Ry_out(invQy) );
 	
 	// Calculate slope between points
 	wire [`DATAWIDTH - 1 : 0] lam_sub1, lam_sub2, lam_div1, lam_div2, lam_mul1, lam_mul2, lam_mul3, lam_add;

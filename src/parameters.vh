@@ -6,6 +6,9 @@
 // secretKey is the private key together with the public key Y=xP
 // k is a random scalar used for encryption
 
+// FIBONACCI is used for the extended euclidian algorithm
+// The max runtime of said algorithm is upper-bound by the index of the smallest Fibonacci number >= 2^DATAWIDTH
+
 // Parameters for Elliptic Curve with 521 bits
 /*
 `define FIBONACCI  753

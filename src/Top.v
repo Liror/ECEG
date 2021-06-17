@@ -14,7 +14,7 @@ module Top(output [`DATAWIDTH-1:0] test, output wire check);
 	wire [`DATAWIDTH - 1 : 0] My;
 	
 	// Preparation of public key Y = secretKey*P from parameters
-	PointMultiplier mulmodule( .n(`secretKey), .Qx(`Px), .Qy(`Py), .Rx_out(Yx), .Ry_out(Yy) );
+	PointMultiplier mulmodule_pubkey( .n(`secretKey), .Qx(`Px), .Qy(`Py), .Rx_out(Yx), .Ry_out(Yy) );
 	
 	// Encryption module
 	Encrypt encryptionmodule(

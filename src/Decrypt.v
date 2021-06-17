@@ -18,8 +18,8 @@ module Decrypt(
 	wire [`DATAWIDTH - 1 : 0] My;
 	
 	// Decryption operations on elliptic curve
-	PointMultiplier mulmodule( .n(secretKey), .Qx(C1x_in), .Qy(C1y_in), .Rx_out(Cpx), .Ry_out(Cpy) );
-	PointSubtraction submodule( .Px(C2x_in), .Py(C2y_in), .Qx(Cpx), .Qy(Cpy), .Rx_out(Mx), .Ry_out(My) );
+	PointMultiplier mulmodule_dec( .n(secretKey), .Qx(C1x_in), .Qy(C1y_in), .Rx_out(Cpx), .Ry_out(Cpy) );
+	PointSubtraction submodule_dec( .Px(C2x_in), .Py(C2y_in), .Qx(Cpx), .Qy(Cpy), .Rx_out(Mx), .Ry_out(My) );
 	
 	// Final point assignment
 	assign Mx_out = Mx;

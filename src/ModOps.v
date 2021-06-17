@@ -44,9 +44,9 @@ module ModMul(
 	// Using Double-and-Add cascade for scalar multiplication
 	assign tmp[`DATAWIDTH] = `DATAWIDTH'b0;
 	generate
-		for(i=`DATAWIDTH; i>0; i=i-1) begin : gen_loop
-			ModAdd adderA( .a(tmp[i]), .b(tmp[i]), .r(tmp1[i]) );
-			ModAdd adderB( .a(tmp1[i]), .b(b), .r(tmp2[i]) );
+		for(i=`DATAWIDTH; i>0; i=i-1) begin : ModMul_loop
+			ModAdd adder_mulA( .a(tmp[i]), .b(tmp[i]), .r(tmp1[i]) );
+			ModAdd adder_mulB( .a(tmp1[i]), .b(b), .r(tmp2[i]) );
 			assign tmp[i-1] = a[i-1] ? tmp2[i] : tmp1[i];
 		end
 	endgenerate
@@ -63,8 +63,8 @@ module ModDiv(
 	
 	// Division as inversion and multiplication
 	wire [`DATAWIDTH - 1 : 0] inv;
-	ModMul multiplier( .a(a), .b(inv), .r(r) );
-	ModInv inverter( .a(b), .r(inv) );
+	ModMul multiplier_div( .a(a), .b(inv), .r(r) );
+	ModInv inverter_div( .a(b), .r(inv) );
 
 endmodule
 
@@ -92,11 +92,13 @@ module ModInv(
 	assign news[0] = { 1'b0, a};
 	
 	// Extended euclidian algorithm
+	// Generate enough loop-cycles up to the first Fibonacci number > 2^DATAWIDTH
+	// This ensures proper termination of the algorithm
 	generate
-		for(i=0; i<`FIBONACCI; i=i+1) begin : gen_loop
-			Divide divC( .a(s[i]), .b(news[i]), .r(quot[i]) );
-			Multiply mulA( .a(quot[i]), .b(newt[i]), .r(tmp1[i]) );
-			Multiply mulB( .a(quot[i]), .b(news[i]), .r(tmp2[i]) );
+		for(i=0; i<`FIBONACCI; i=i+1) begin : ModInv_loop
+			Divide scalar_div( .a(s[i]), .b(news[i]), .r(quot[i]) );
+			Multiply scalar_mulA( .a(quot[i]), .b(newt[i]), .r(tmp1[i]) );
+			Multiply scalar_mulB( .a(quot[i]), .b(news[i]), .r(tmp2[i]) );
 			assign t[i+1] = (news[i] == `DATAWIDTH'b0) ? t[i] : newt[i];
 			assign newt[i+1] = (news[i] == `DATAWIDTH'b0) ? newt[i] : (t[i] - tmp1[i]);
 			assign s[i+1] = (news[i] == `DATAWIDTH'b0) ? s[i] : news[i];
