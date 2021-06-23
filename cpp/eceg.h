@@ -16,9 +16,10 @@ template<class T>
 class eceg {
 	public:
 		// Basic functions
-		eceg(uint32_t bitlength, T p, T A, T B)
+		eceg(uint32_t bitlength, uint32_t fibonacci, T p, T A, T B)
 		{
 			this->bitlength = bitlength;
+			this->fibonacci = fibonacci;
 			this->p = p;
 			this->A = A;
 			this->B = B;
@@ -70,29 +71,38 @@ class eceg {
 			Ry = tmpY;
 		}
 		
-		// Point Adder (as copied from Verilog with modifications)
+		// Point Adder (as copied from Verilog)
 		void PointAdder(T Px, T Py, T Qx, T Qy, T& Rx, T& Ry)
 		{
-			T invQx = 0, invQy = 0;
+			T invQx=0, invQy=0;
 			PointInversion(Qx, Qy, invQx, invQy);
-			if(Px == 0 && Py == 0) {
-				Rx = Qx;
-				Ry = Qy;
-			}
-			else if(Qx == 0 && Qy == 0) {
-				Rx = Px;
-				Ry = Py;
-			}
-			else if(Px == invQx && Py == invQy) {
-				Rx = 0;
-				Ry = 0;
-			}
-			else {
-				T lambda = (Px != Qx || Py != Qy) ? mod_div(mod_sub(Qy, Py), mod_sub(Qx, Px))
-				         : mod_div(mod_add(mod_mul(3, mod_mul(Px, Px)), this->A), mod_mul(2, Py));
-				Rx = mod_sub(mod_sub(mod_mul(lambda, lambda), Px), Qx);
-				Ry = mod_sub(mod_mul(lambda, mod_sub(Px, Rx)), Py);
-			}
+
+			T lam_sub1=0, lam_sub2=0, lam_mul1=0, lam_mul2=0, lam_mul3, lam_add=0, lambda=0;
+			ModSub(Qy, Py, lam_sub1);
+			ModSub(Qx, Px, lam_sub2);
+			ModMul(Px, Px, lam_mul1);
+			ModMul(3, lam_mul1, lam_mul2);
+			ModAdd(lam_mul2, this->A, lam_add);
+			ModMul(2, Py, lam_mul3);
+			T div_opA = (Px != Qx || Py != Qy) ? lam_sub1 : lam_add;
+			T div_opB = (Px != Qx || Py != Qy) ? lam_sub2 : lam_mul3;
+			ModDiv(div_opA, div_opB, lambda);
+
+			T out_mul1=0, out_mul2=0, out_sub1=0, out_sub2=0, out_sub3=0, out_sub4=0;
+			ModMul(lambda, lambda, out_mul1);
+			ModSub(out_mul1, Px, out_sub1);
+			ModSub(out_sub1, Qx, out_sub2);
+			Rx = (Px == 0 && Py == 0) ? Qx
+			   : (Qx == 0 && Qy == 0) ? Px
+			   : (Px == invQx && Py == (invQy)) ? 0
+			   : out_sub2;
+			ModSub(Px, Rx, out_sub3);
+			ModMul(lambda, out_sub3, out_mul2);
+			ModSub(out_mul2, Py, out_sub4);
+			Ry = (Px == 0 && Py == 0) ? Qy
+			   : (Qx == 0 && Qy == 0) ? Py
+			   : (Px == invQx && Py == (invQy)) ? 0
+			   : out_sub4;
 		}
 
 		// Point Subtractor (as copied from Verilog)
@@ -115,56 +125,89 @@ class eceg {
 		T p;
 		T A, B;
 		uint32_t bitlength;
+		uint32_t fibonacci;
 		
-		// Helperfunction - Modular addition (modified from Verilog)
-		T mod_add(T a, T b) {
-			return ((a + b) >= this->p || (a + b) < a) ? a + b - this->p : a + b;
+		// Helperfunction - Modular addition (as copied from Verilog with minor modifications)
+		void ModAdd(T a, T b, T& r)
+		{
+			T tmp = a + b - this->p;
+			r = ((a + b) < this->p && (a + b) >= a) ? tmp + this->p : tmp;
 		}
 		
-		// Helperfunction - Modular subtraction (modified from Verilog)
-		T mod_sub(T a, T b) {
-			return mod_add(a, this->p - b);
+		// Helperfunction - Modular subtraction (as copied from Verilog with minor modifications)
+		void ModSub(T a, T b, T& r)
+		{
+			T tmp = a - b;
+			r = (b > a) ? tmp + this->p : tmp;
 		}
 		
 		// Helperfunction - Modular multiplication (as copied from Verilog with modifications)
-		// ==> Rework using Montgomery multiplication instead of Double and Add?
-		T mod_mul(T a, T b) {
-			T tmp = 0;
+		void ModMul(T a, T b, T& r)
+		{
+			T tmp = 0, tmp3 = 0;
 			for(uint32_t i=this->bitlength; i>0; --i) {
-				T tmp1 = mod_add(tmp, tmp);
+				T tmp1 = (tmp << 1) - this->p;
+				T tmp2 = ((tmp+tmp) < this->p && (tmp+tmp) >= tmp) ? tmp1 + this->p : tmp1;
+				ModAdd(tmp2, b, tmp3);
 				if((a >> (i-1)) & 1)
-					tmp = mod_add(tmp1, b);
+					tmp = tmp3;
 				else
-					tmp = tmp1;
+					tmp = tmp2;
 			}
-			return tmp;
+			r = tmp;
 		}
 		
-		// Helperfunction - Modular division (modified from Verilog)
-		T mod_div(T a, T b) {
-			return mod_mul(a, mod_inv(b));
+		// Helperfunction - Modular division (as copied from Verilog)
+		void ModDiv(T a, T b, T& r)
+		{
+			T inv = 0;
+			ModInv(b, inv);
+			ModMul(a, inv, r);
 		}
 		
-		// Helperfunction - Inversion (extended euclidian algorithm)
-		// ==> Needs multiplier & divisor module without modulus in Verilog
-		T mod_inv(T a) {
-			T t = 0, newt = 1;
-			T r = this->p, newr = a;
-
-			while(newr != 0) {
-				T quot = r / newr;
-				T tmp = t - quot*newt;
-				t = newt;
-				newt = tmp;
-				tmp = r - quot*newr;
-				r = newr;
-				newr = tmp;
+		// Helperfunction - Inversion (extended euclidian algorithm) (as copied from Verilog with minor modifications)
+		void ModInv(T a, T& r)
+		{
+			T t=0, newt=1, quot=0, unused=0, tmp1=0, tmp2=0;
+			T s = this->p, news = a;
+			for(uint32_t i=0; i<this->fibonacci; ++i) {
+				Divide(s, news, quot, unused);
+				Multiply(quot, newt, tmp1);
+				Multiply(quot, news, tmp2);
+				tmp1 = t - tmp1;
+				tmp2 = s - tmp2;
+				t = (news == 0) ? t : newt;
+				newt = (news == 0) ? newt : tmp1;
+				s = (news == 0) ? s : news;
+				news = (news == 0) ? news : tmp2;
 			}
-
-			if(r > 1)
-				throw "Number is not invertible, this is impossible in a prime-ring!";
-			else if(t < 0 || t >= this->p)
-				t += this->p;
-			return t;
+			r = (t < 0 || t >= this->p) ? t + this->p : t;
 		}
+
+		// Helperfunction - scalar multiplication (as modified from Verilog)
+		// IMPORTANT: for loop must run through all bits of the datatype T, not just the used ones!
+		void Multiply(T a, T b, T& r)
+		{
+			T tmp = (b & 1) ? a : 0;
+			for(uint32_t i=1; i<sizeof(T)*8; ++i)
+				tmp += ((b>>i) & 1) ? (a << i) : 0;
+			r = tmp;
+		}
+
+		// Helperfunction - scalar division (as copied from Verilog)
+		void Divide(T a, T b, T& q, T& r)
+		{
+			T tmpR1 = 0, tmpR2 = 0, tmpQ = 0;
+			for(uint32_t i=this->bitlength; i>0; --i) {
+				tmpR1 = (tmpR2<<1) | ((a>>i)&1);
+				tmpR2 = tmpR1 >= b ? tmpR1 - b : tmpR1;
+				tmpQ |= (tmpR1 >= b ? 1 : 0) << i;
+			}
+			tmpR1 = (tmpR2<<1) | ((a>>0)&1);
+			tmpR2 = tmpR1 >= b ? tmpR1 - b : tmpR1;
+			tmpQ |= (tmpR1 >= b ? 1 : 0) << 0;
+			q = (b==0) ? 0 : tmpQ;
+			r = (b==0) ? 0 : tmpR2;
+		}
+
 };

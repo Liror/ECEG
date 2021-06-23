@@ -2,6 +2,7 @@
 
 // Parameters for Elliptic Curve with 15 bits
 #define _DATAWIDTH 15
+#define _FIBONACCI 24
 #define _p 32003
 #define _A 18786
 #define _B 12857
@@ -26,7 +27,7 @@ typedef uint32_t __DATATYPE__;
 int main(int argc, char* argv[])
 {
 	// Create cryptosystem
-	eceg<__DATATYPE__> crypto(_DATAWIDTH, _p, _A, _B);
+	eceg<__DATATYPE__> crypto(_DATAWIDTH, _FIBONACCI, _p, _A, _B);
 	
 	// Prepare variables
 	__DATATYPE__ Yx = 0, Yy = 0;
