@@ -84,6 +84,7 @@ module ModInv(
 	wire [`DATAWIDTH : 0] quot [0:`FIBONACCI];
 	wire [`DATAWIDTH : 0] tmp1 [0:`FIBONACCI];
 	wire [`DATAWIDTH : 0] tmp2 [0:`FIBONACCI];
+	wire [`DATAWIDTH : 0] unused [0:`FIBONACCI];
 	wire [`DATAWIDTH : 0] result;
 	genvar i;
 	
@@ -98,7 +99,7 @@ module ModInv(
 	// This ensures proper termination of the algorithm
 	generate
 		for(i=0; i<`FIBONACCI; i=i+1) begin : ModInv_loop
-			Divide scalar_div( .a(s[i]), .b(news[i]), .r(quot[i]) );
+			Divide scalar_div( .a(s[i]), .b(news[i]), .q(quot[i]), .r(unused[i]) );
 			Multiply scalar_mulA( .a(quot[i]), .b(newt[i]), .r(tmp1[i]) );
 			Multiply scalar_mulB( .a(quot[i]), .b(news[i]), .r(tmp2[i]) );
 			assign t[i+1] = (news[i] == `DATAWIDTH'b0) ? t[i] : newt[i];
