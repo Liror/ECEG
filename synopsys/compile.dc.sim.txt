@@ -1,0 +1,54 @@
+set CIRCUIT_NAME Top
+set CIRCUIT_PATH ./ 
+set CIRCUIT_ENTITY_NAME $CIRCUIT_NAME
+set EXPORT_PATH FR-$CIRCUIT_ENTITY_NAME/
+set MY_CIRCUIT_NAME FR-$CIRCUIT_NAME
+remove_design -all
+set link_library { ../library.db }
+set target_library { ../library.db }
+set synthetic_library { ../library.db }
+set_dont_use NangateOpenCellLibrary/FA_*
+set_dont_use NangateOpenCellLibrary/CLKBUF*
+set_dont_use NangateOpenCellLibrary/SDFF_*
+set_dont_use NangateOpenCellLibrary/SDFFR_*
+set_dont_use NangateOpenCellLibrary/SDFFS_*
+set_dont_use NangateOpenCellLibrary/DFF_*
+set_dont_use NangateOpenCellLibrary/DFFS_*
+set_dont_use NangateOpenCellLibrary/DFFR_*
+set_dont_use NangateOpenCellLibrary/SDFFRS_*
+set_dont_use NangateOpenCellLibrary/DFFRS_*
+set_dont_use NangateOpenCellLibrary/DLH_*
+set_dont_use NangateOpenCellLibrary/DLL_*
+set_dont_use NangateOpenCellLibrary/TLAT_*
+set verilogout_no_tri true
+set verilogout_equation false
+set verilogout_higher_designs_first false
+set verilogout_show_unconnected_pins false
+set bus_naming_style %s_%d
+set search_path  [concat $search_path $CIRCUIT_PATH]
+set verilogFileName  $CIRCUIT_NAME.v
+analyze -library WORK -format VERILOG Ops.v
+analyze -library WORK -format VERILOG ModOps.v
+analyze -library WORK -format VERILOG PointInversion.v
+analyze -library WORK -format VERILOG PointAdder.v
+analyze -library WORK -format VERILOG PointSubtraction.v
+analyze -library WORK -format VERILOG PointMultiplier.v
+analyze -library WORK -format VERILOG Decrypt.v
+analyze -library WORK -format VERILOG Encrypt.v 
+analyze -library WORK -format VERILOG $verilogFileName 
+elaborate $CIRCUIT_NAME -library WORK
+define_name_rules SIMPLE -allowed "A-Z _a-z0-9"
+set default_name_rules SIMPLE
+change_names
+link
+uniquify
+remove_bus *
+set_fix_multiple_port_nets -buffer_constants -feedthroughs -outputs
+#check_design
+compile -exact_map -ungroup_all -map_effort medium -area_effort medium
+check_design > tmp.txt
+file mkdir $EXPORT_PATH;
+write $CIRCUIT_NAME -format verilog -output $EXPORT_PATH$MY_CIRCUIT_NAME.v
+write_sdf $EXPORT_PATH$MY_CIRCUIT_NAME.sdf
+report_reference -hierarchy
+exit
