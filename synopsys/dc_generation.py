@@ -14,7 +14,7 @@ def writeDCFile(folder):
 
 	# Write DC settings file
 	dcFile.write("set CIRCUIT_NAME "+cipherName+"\n")
-	dcFile.write("set CIRCUIT_PATH ./ \n")
+	dcFile.write("set CIRCUIT_PATH ../src/ \n")
 	dcFile.write("set CIRCUIT_ENTITY_NAME $CIRCUIT_NAME\n")
 	dcFile.write("set EXPORT_PATH FR-$CIRCUIT_ENTITY_NAME/\n")
 	dcFile.write("set MY_CIRCUIT_NAME FR-$CIRCUIT_NAME\n")
