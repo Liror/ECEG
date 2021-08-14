@@ -115,6 +115,7 @@
 */
 
 // Parameters for Elliptic Curve with 15 bits
+/*
 `define FIBONACCI   24
 `define DATAWIDTH   15
 `define p           15'd32003
@@ -126,3 +127,17 @@
 `define My0         15'd20887
 `define secretKey   15'd23413
 `define k           15'd15321
+*/
+
+// Parameters for Elliptic Curve with 6 bits
+`define FIBONACCI   11
+`define DATAWIDTH   6
+`define p           6'd61
+`define A           6'd37
+`define B           6'd30
+`define Px          6'd31
+`define Py          6'd23
+`define Mx0         6'd7
+`define My0         6'd49
+`define secretKey   6'd53
+`define k           6'd15

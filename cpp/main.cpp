@@ -1,23 +1,23 @@
 // main.cpp: Testbench file for EllipticCurve ElGamal cryptosystem
 
-// Parameters for Elliptic Curve with 15 bits
-#define _DATAWIDTH 15
-#define _FIBONACCI 24
-#define _p 32003
-#define _A 18786
-#define _B 12857
-#define _Px 16533
-#define _Py 31897
-#define _Mx0 16775
-#define _My0 20887
-#define _secretKey 23413
-#define _k 15321
+// Parameters for Elliptic Curve with 6 bits
+#define _DATAWIDTH 6
+#define _FIBONACCI 11
+#define _p 61
+#define _A 37
+#define _B 30
+#define _Px 31
+#define _Py 23
+#define _Mx0 7
+#define _My0 49
+#define _secretKey 53
+#define _k 15
 
 // Headers
 #include <cstdio>
 #include "eceg.h"
 
-// Datatype for elliptic cirve handling
+// Datatype for elliptic curve handling
 // Must support the following operations:
 // + - * / = >> & == >= != (cast from uint32_t)
 // Also needs to be one bit wider than _DATAWIDTH
